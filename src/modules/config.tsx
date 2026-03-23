@@ -1,5 +1,5 @@
 import type { ModuleConfig, ModuleFormState, RenderTools } from './types'
-import { emptyRow, round, toNumber } from './helpers'
+import { emptyRow, normalizeFlexibleDate, round, toNumber } from './helpers'
 
 const COLOR_GARDNER_MAP: Record<number, number> = {
     1: 5,
@@ -364,16 +364,26 @@ function renderApprovalBoxes(tools: RenderTools) {
                 <div key={String(label)} className="border border-black p-4 text-[13px] text-black">
                     <p className="font-medium">{label}:</p>
                     <div className="mt-2 border-b border-black">
-                        {tools.text(String(personPath), {
-                            placeholder: '-',
-                            className: excelInputClass,
-                        })}
+                        {personPath === 'revisado_por'
+                            ? tools.select(String(personPath), {
+                                className: excelInputClass,
+                                values: [
+                                    { label: '-', value: '' },
+                                    { label: 'Fabian', value: 'Fabian' },
+                                    { label: 'Irma', value: 'Irma' },
+                                ],
+                            })
+                            : tools.text(String(personPath), {
+                                placeholder: '-',
+                                className: excelInputClass,
+                            })}
                     </div>
                     <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
                         <span>Fecha:</span>
                         <div className="border-b border-black">
                             {tools.text(String(datePath), {
                                 placeholder: 'DD/MM/AA',
+                                normalizeOnBlur: normalizeFlexibleDate,
                                 className: excelInputClass,
                             })}
                         </div>
