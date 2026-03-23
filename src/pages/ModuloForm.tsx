@@ -84,6 +84,12 @@ export default function ModuloForm() {
     }, [form, moduleConfig])
 
     useEffect(() => {
+        if (typeof window === 'undefined') return
+        if (window.parent === window) return
+        window.parent.postMessage({ type: 'IFRAME_READY' }, '*')
+    }, [])
+
+    useEffect(() => {
         if (!moduleConfig || !ensayoId) return
         let cancelled = false
         const run = async () => {
