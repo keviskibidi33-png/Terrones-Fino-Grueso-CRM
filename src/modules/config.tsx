@@ -21,6 +21,7 @@ const excelGroupTitleClass = 'border border-black px-2 py-1.5 text-left text-[13
 const excelInputClass = '!h-8 !rounded-none !border-0 !bg-transparent !px-1.5 !text-[13px] !text-black !shadow-none focus:!ring-0'
 const excelBlueInputClass = '!h-8 !rounded-none !border-0 !bg-[#dbe6f4] !px-1.5 !text-[13px] !text-black !shadow-none focus:!ring-0'
 const excelReadonlyInputClass = '!h-8 !rounded-none !border-0 !bg-[#eef3f8] !px-1.5 !text-[13px] !font-semibold !text-black !shadow-none focus:!ring-0'
+const excelReadonlySpacerClass = 'h-8 bg-[#eef3f8]'
 const excelSelectBlueClass = '!h-8 !rounded-none !border-0 !bg-[#dbe6f4] !px-1.5 !text-[13px] !text-black !shadow-none focus:!ring-0'
 const excelTextareaClass = '!min-h-[96px] !rounded-none !border-0 !bg-transparent !px-2 !py-2 !text-[13px] !text-black !shadow-none focus:!ring-0'
 
@@ -32,6 +33,10 @@ function createBaseState(): ModuleFormState {
         realizado_por: '',
         cliente: '',
         observaciones: '',
+        revisado_por: '',
+        revisado_fecha: '',
+        aprobado_por: '',
+        aprobado_fecha: '',
     }
 }
 
@@ -349,13 +354,30 @@ function deriveAngularidad(state: ModuleFormState): ModuleFormState {
     }
 }
 
-function renderApprovalBoxes() {
+function renderApprovalBoxes(tools: RenderTools) {
     return (
         <div className="grid gap-6 pt-2 md:grid-cols-2">
-            {['Revisado', 'Aprobado'].map((label) => (
-                <div key={label} className="border border-black p-4 text-[13px] text-black">
+            {[
+                ['Revisado', 'revisado_por', 'revisado_fecha'],
+                ['Aprobado', 'aprobado_por', 'aprobado_fecha'],
+            ].map(([label, personPath, datePath]) => (
+                <div key={String(label)} className="border border-black p-4 text-[13px] text-black">
                     <p className="font-medium">{label}:</p>
-                    <p className="mt-5">Fecha:</p>
+                    <div className="mt-2 border-b border-black">
+                        {tools.text(String(personPath), {
+                            placeholder: '-',
+                            className: excelInputClass,
+                        })}
+                    </div>
+                    <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
+                        <span>Fecha:</span>
+                        <div className="border-b border-black">
+                            {tools.text(String(datePath), {
+                                placeholder: 'DD/MM/AA',
+                                className: excelInputClass,
+                            })}
+                        </div>
+                    </div>
                 </div>
             ))}
         </div>
@@ -712,7 +734,7 @@ function renderPartLivianas(tools: RenderTools) {
                 </div>
 
                 <div className="space-y-4">
-                    {renderApprovalBoxes()}
+                    {renderApprovalBoxes(tools)}
                     <div className="border-t-2 border-b-2 border-[#294d92] px-4 py-3 text-center text-[12px] leading-tight text-black">
                         <p>WEB: www.geofal.com.pe E-MAIL: laboratorio@geofal.com.pe | geofal.sac@gmail.com</p>
                         <p>Av. Marañón 763, Los Olivos-Lima | Teléfono 01522-1851</p>
@@ -876,7 +898,7 @@ function renderTerrones(tools: RenderTools) {
                 </table>
             </div>
 
-            {renderApprovalBoxes()}
+            {renderApprovalBoxes(tools)}
         </div>
     )
 }
@@ -1106,7 +1128,7 @@ function renderSulMagnesio(tools: RenderTools) {
                 </table>
             </div>
 
-            {renderApprovalBoxes()}
+            {renderApprovalBoxes(tools)}
         </div>
     )
 }
@@ -1222,7 +1244,11 @@ function renderAngularidad(tools: RenderTools) {
                                     <td className={`${excelCellClass} p-0`}>{tools.number(`${prefix}_masa_agregado_cilindro_g`, { className: excelBlueInputClass })}</td>
                                     <td className={`${excelCellClass} p-0`}>{tools.readonly(`${prefix}_masa_neta_agregado_g`, { className: excelReadonlyInputClass })}</td>
                                     <td className={`${excelCellClass} p-0`}>{tools.readonly(`${prefix}_vacio_pct`, { className: excelReadonlyInputClass })}</td>
-                                    <td className={`${excelCellClass} p-0`}>{index === metodoATrials.length - 1 ? tools.readonly('metodo_a_angularidad_promedio_us_pct', { className: excelReadonlyInputClass }) : null}</td>
+                                    <td className={`${excelCellClass} p-0`}>
+                                        {index === metodoATrials.length - 1
+                                            ? tools.readonly('metodo_a_angularidad_promedio_us_pct', { className: excelReadonlyInputClass })
+                                            : <div className={excelReadonlySpacerClass} />}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -1285,7 +1311,11 @@ function renderAngularidad(tools: RenderTools) {
                                 <td className={`${excelCellClass} p-0`}>{tools.number(`${prefix}_masa_agregado_cilindro_g`, { className: excelBlueInputClass })}</td>
                                 <td className={`${excelCellClass} p-0`}>{tools.readonly(`${prefix}_masa_neta_agregado_g`, { className: excelReadonlyInputClass })}</td>
                                 <td className={`${excelCellClass} p-0`}>{tools.readonly(`${prefix}_vacio_pct`, { className: excelReadonlyInputClass })}</td>
-                                <td className={`${excelCellClass} p-0`}>{index === metodoBTrials.length - 1 ? tools.readonly('metodo_b_angularidad_promedio_um_pct', { className: excelReadonlyInputClass }) : null}</td>
+                                <td className={`${excelCellClass} p-0`}>
+                                    {index === metodoBTrials.length - 1
+                                        ? tools.readonly('metodo_b_angularidad_promedio_um_pct', { className: excelReadonlyInputClass })
+                                        : <div className={excelReadonlySpacerClass} />}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -1341,7 +1371,11 @@ function renderAngularidad(tools: RenderTools) {
                                 <td className={`${excelCellClass} p-0`}>{tools.number(`${prefix}_masa_agregado_cilindro_g`, { className: excelBlueInputClass })}</td>
                                 <td className={`${excelCellClass} p-0`}>{tools.readonly(`${prefix}_masa_neta_agregado_g`, { className: excelReadonlyInputClass })}</td>
                                 <td className={`${excelCellClass} p-0`}>{tools.readonly(`${prefix}_vacio_pct`, { className: excelReadonlyInputClass })}</td>
-                                <td className={`${excelCellClass} p-0`}>{index === metodoCTrials.length - 1 ? tools.readonly('metodo_c_angularidad_promedio_ur_pct', { className: excelReadonlyInputClass }) : null}</td>
+                                <td className={`${excelCellClass} p-0`}>
+                                    {index === metodoCTrials.length - 1
+                                        ? tools.readonly('metodo_c_angularidad_promedio_ur_pct', { className: excelReadonlyInputClass })
+                                        : <div className={excelReadonlySpacerClass} />}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -1380,6 +1414,8 @@ function renderAngularidad(tools: RenderTools) {
                     </tbody>
                 </table>
             </div>
+
+            {renderApprovalBoxes(tools)}
         </div>
     )
 }
