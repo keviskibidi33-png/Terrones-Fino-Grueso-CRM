@@ -458,6 +458,8 @@ function renderContMatOrganica(tools: RenderTools) {
                     </tbody>
                 </table>
             </div>
+
+            {renderApprovalBoxes(tools)}
         </div>
     )
 }
@@ -533,6 +535,8 @@ function renderAzulMetileno(tools: RenderTools) {
                     </tbody>
                 </table>
             </div>
+
+            {renderApprovalBoxes(tools)}
         </div>
     )
 }
@@ -617,6 +621,8 @@ function renderImpOrganicas(tools: RenderTools) {
                     La equivalencia Gardner se completa automaticamente al elegir el color observado en la placa orgánica.
                 </div>
             </div>
+
+            {renderApprovalBoxes(tools)}
         </div>
     )
 }
