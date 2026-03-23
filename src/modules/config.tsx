@@ -24,6 +24,8 @@ const excelReadonlyInputClass = '!h-8 !rounded-none !border-0 !bg-[#eef3f8] !px-
 const excelReadonlySpacerClass = 'h-8 bg-[#eef3f8]'
 const excelSelectBlueClass = '!h-8 !rounded-none !border-0 !bg-[#dbe6f4] !px-1.5 !text-[13px] !text-black !shadow-none focus:!ring-0'
 const excelTextareaClass = '!min-h-[96px] !rounded-none !border-0 !bg-transparent !px-2 !py-2 !text-[13px] !text-black !shadow-none focus:!ring-0'
+const FOOTER_REVIEWERS = ['-', 'FABIAN LA ROSA'] as const
+const FOOTER_APPROVERS = ['-', 'IRMA COAQUIRA'] as const
 
 function createBaseState(): ModuleFormState {
     return {
@@ -33,9 +35,9 @@ function createBaseState(): ModuleFormState {
         realizado_por: '',
         cliente: '',
         observaciones: '',
-        revisado_por: '',
+        revisado_por: '-',
         revisado_fecha: '',
-        aprobado_por: '',
+        aprobado_por: '-',
         aprobado_fecha: '',
     }
 }
@@ -364,19 +366,13 @@ function renderApprovalBoxes(tools: RenderTools) {
                 <div key={String(label)} className="border border-black p-4 text-[13px] text-black">
                     <p className="font-medium">{label}:</p>
                     <div className="mt-2 border-b border-black">
-                        {personPath === 'revisado_por'
-                            ? tools.select(String(personPath), {
-                                className: excelInputClass,
-                                values: [
-                                    { label: '-', value: '' },
-                                    { label: 'Fabian', value: 'Fabian' },
-                                    { label: 'Irma', value: 'Irma' },
-                                ],
-                            })
-                            : tools.text(String(personPath), {
-                                placeholder: '-',
-                                className: excelInputClass,
-                            })}
+                        {tools.select(String(personPath), {
+                            className: excelInputClass,
+                            values: (personPath === 'revisado_por' ? FOOTER_REVIEWERS : FOOTER_APPROVERS).map((option) => ({
+                                label: option,
+                                value: option,
+                            })),
+                        })}
                     </div>
                     <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2">
                         <span>Fecha:</span>
