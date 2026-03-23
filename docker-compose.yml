@@ -1,0 +1,18 @@
+services:
+  ensayos-especiales-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-https://api.geofal.com.pe}
+        - VITE_CRM_LOGIN_URL=${VITE_CRM_LOGIN_URL:-https://crm.geofal.com.pe/login}
+        - VITE_MODULE_SLUG=${VITE_MODULE_SLUG:-terrones-fino-grueso}
+    expose:
+      - "80"
+    restart: always
+    networks:
+      - coolify
+
+networks:
+  coolify:
+    external: true
