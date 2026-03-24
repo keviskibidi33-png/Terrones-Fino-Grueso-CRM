@@ -1,12 +1,47 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { SessionGuard } from './components/SessionGuard'
 import ModuloForm from './pages/ModuloForm'
 
 const CRM_LOGIN_URL = import.meta.env.VITE_CRM_LOGIN_URL || 'http://localhost:3000/login'
+const READY_RETRY_DELAY_MS = 350
+const MODULE_SLUG = (import.meta.env.VITE_MODULE_SLUG || 'special-lab').trim() || 'special-lab'
+
+const resolveParentOrigin = (): string | null => {
+    const configuredOrigin = (import.meta.env.VITE_CRM_PARENT_ORIGIN || '').trim()
+    if (configuredOrigin) {
+        try {
+            return new URL(configuredOrigin).origin
+        } catch {
+            // ignore invalid configured origins
+        }
+    }
+
+    if (typeof document !== 'undefined' && document.referrer) {
+        try {
+            return new URL(document.referrer).origin
+        } catch {
+            // ignore invalid referrers
+        }
+    }
+
+    return null
+}
 
 function AccessGate({ children }: { children: ReactNode }) {
     const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null)
+    const parentOrigin = useMemo(() => resolveParentOrigin(), [])
+    const isEmbedded = typeof window !== 'undefined' && window.parent !== window
+
+    const notifyParentReady = useCallback(() => {
+        if (!isEmbedded) return
+        window.parent.postMessage({
+            type: 'IFRAME_READY',
+            module: MODULE_SLUG,
+            path: window.location.pathname,
+            timestamp: Date.now(),
+        }, parentOrigin ?? '*')
+    }, [isEmbedded, parentOrigin])
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search)
@@ -17,10 +52,31 @@ function AccessGate({ children }: { children: ReactNode }) {
         }
 
         const token = tokenFromUrl || localStorage.getItem('token')
-        const isEmbedded = window.parent !== window
         const authorized = Boolean(tokenFromUrl || (isEmbedded && token))
         setIsAuthorized(authorized)
-    }, [])
+    }, [isEmbedded])
+
+    useEffect(() => {
+        if (!isEmbedded) return
+
+        notifyParentReady()
+        const delayedReady = window.setTimeout(() => {
+            notifyParentReady()
+        }, READY_RETRY_DELAY_MS)
+
+        const onMessage = (event: MessageEvent) => {
+            if (process.env.NODE_ENV === 'production' && parentOrigin && event.origin !== parentOrigin) return
+            if (event.data?.type === 'PING_IFRAME_READY') {
+                notifyParentReady()
+            }
+        }
+
+        window.addEventListener('message', onMessage)
+        return () => {
+            clearTimeout(delayedReady)
+            window.removeEventListener('message', onMessage)
+        }
+    }, [isEmbedded, notifyParentReady, parentOrigin])
 
     if (isAuthorized === null) return null
 

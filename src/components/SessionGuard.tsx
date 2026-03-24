@@ -1,21 +1,43 @@
 import { useState, useEffect } from 'react'
 
 const REFRESH_INTERVAL_MS = 60 * 60 * 1000 // 60 min
+const resolveParentOrigin = (): string | null => {
+    const configuredOrigin = (import.meta.env.VITE_CRM_PARENT_ORIGIN || '').trim()
+    if (configuredOrigin) {
+        try {
+            return new URL(configuredOrigin).origin
+        } catch {
+            // ignore invalid configured origins
+        }
+    }
+
+    if (typeof document !== 'undefined' && document.referrer) {
+        try {
+            return new URL(document.referrer).origin
+        } catch {
+            // ignore invalid referrers
+        }
+    }
+
+    return null
+}
 
 export function SessionGuard() {
     const [expired, setExpired] = useState(false)
 
     useEffect(() => {
+        const parentOrigin = resolveParentOrigin()
         const onExpired = () => setExpired(true)
         window.addEventListener('session-expired', onExpired)
 
         const interval = setInterval(() => {
             if (window.parent !== window) {
-                window.parent.postMessage({ type: 'TOKEN_REFRESH_REQUEST' }, '*')
+                window.parent.postMessage({ type: 'TOKEN_REFRESH_REQUEST' }, parentOrigin ?? '*')
             }
         }, REFRESH_INTERVAL_MS)
 
         const onMessage = (event: MessageEvent) => {
+            if (process.env.NODE_ENV === 'production' && parentOrigin && event.origin !== parentOrigin) return
             if (event.data?.type === 'TOKEN_REFRESH' && event.data.token) {
                 localStorage.setItem('token', event.data.token)
             }
