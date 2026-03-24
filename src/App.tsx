@@ -8,23 +8,35 @@ const READY_RETRY_DELAY_MS = 350
 const MODULE_SLUG = (import.meta.env.VITE_MODULE_SLUG || 'special-lab').trim() || 'special-lab'
 
 const resolveParentOrigin = (): string | null => {
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : null
     const configuredOrigin = (import.meta.env.VITE_CRM_PARENT_ORIGIN || '').trim()
+    let parsedConfiguredOrigin: string | null = null
     if (configuredOrigin) {
         try {
-            return new URL(configuredOrigin).origin
+            parsedConfiguredOrigin = new URL(configuredOrigin).origin
         } catch {
             // ignore invalid configured origins
         }
     }
 
+    let referrerOrigin: string | null = null
     if (typeof document !== 'undefined' && document.referrer) {
         try {
-            return new URL(document.referrer).origin
+            referrerOrigin = new URL(document.referrer).origin
         } catch {
             // ignore invalid referrers
         }
     }
 
+    const isEmbedded = typeof window !== 'undefined' && window.parent !== window
+    if (isEmbedded) {
+        if (referrerOrigin && referrerOrigin !== currentOrigin) return referrerOrigin
+        if (parsedConfiguredOrigin && parsedConfiguredOrigin !== currentOrigin) return parsedConfiguredOrigin
+        return null
+    }
+
+    if (parsedConfiguredOrigin && parsedConfiguredOrigin !== currentOrigin) return parsedConfiguredOrigin
+    if (referrerOrigin && referrerOrigin !== currentOrigin) return referrerOrigin
     return null
 }
 
