@@ -378,7 +378,7 @@ function renderApprovalBoxes(tools: RenderTools) {
                         <span>Fecha:</span>
                         <div className="border-b border-black">
                             {tools.text(String(datePath), {
-                                placeholder: 'DD/MM/AA',
+                                placeholder: 'YYYY/MM/DD',
                                 normalizeOnBlur: normalizeFlexibleDate,
                                 className: excelInputClass,
                             })}

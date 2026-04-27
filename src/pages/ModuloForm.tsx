@@ -300,7 +300,7 @@ export default function ModuloForm() {
                                 <tr>
                                     <td className="border border-black p-0">{renderText('muestra', { align: 'center', normalizeOnBlur: normalizeMuestraCode, className: SHEET_META_INPUT_CLASS })}</td>
                                     <td className="border border-black p-0">{renderText('numero_ot', { align: 'center', normalizeOnBlur: normalizeNumeroOtCode, className: SHEET_META_INPUT_CLASS })}</td>
-                                    <td className="border border-black p-0">{renderText('fecha_ensayo', { align: 'center', placeholder: 'DD/MM/AA', normalizeOnBlur: normalizeFlexibleDate, className: SHEET_META_INPUT_CLASS })}</td>
+                                    <td className="border border-black p-0">{renderText('fecha_ensayo', { align: 'center', placeholder: 'YYYY/MM/DD', normalizeOnBlur: normalizeFlexibleDate, className: SHEET_META_INPUT_CLASS })}</td>
                                     <td className="border border-black p-0">{renderText('realizado_por', { align: 'center', className: SHEET_META_INPUT_CLASS })}</td>
                                 </tr>
                             </tbody>
