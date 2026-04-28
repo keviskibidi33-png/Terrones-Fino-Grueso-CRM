@@ -28,26 +28,35 @@ export function normalizeFlexibleDate(raw: string): string {
     if (!value) return ''
 
     const digits = value.replace(/\D/g, '')
-    const currentYear = new Date().getFullYear().toString().slice(-2)
+    const currentYear = String(new Date().getFullYear())
     const pad2 = (part: string) => part.padStart(2, '0').slice(-2)
-    const build = (day: string, month: string, year: string = currentYear) =>
-        `${pad2(day)}/${pad2(month)}/${pad2(year)}`
+    const normalizeYear = (part: string) => {
+        const clean = part.replace(/\D/g, '')
+        if (clean.length >= 4) return clean.slice(0, 4)
+        if (clean.length === 2) return `20${clean}`
+        if (clean.length === 1) return `200${clean}`
+        return currentYear
+    }
+    const build = (year: string, month: string, day: string) =>
+        `${normalizeYear(year)}/${pad2(month)}/${pad2(day)}`
 
-    if (value.includes('/')) {
-        const [day = '', month = '', rawYear = ''] = value.split('/').map((part) => part.trim())
-        if (!day || !month) return value
-        let yy = rawYear.replace(/\D/g, '')
-        if (yy.length === 4) yy = yy.slice(-2)
-        if (yy.length === 1) yy = `0${yy}`
-        return build(day, month, yy || currentYear)
+    if (value.includes('/') || value.includes('-')) {
+        const [a = '', b = '', c = ''] = value.split(/[/-]/).map((part) => part.trim())
+        if (!a || !b) return value
+        if (a.length === 4) return build(a, b, c || '01')
+        if (c) return build(c, b, a)
+        return value
     }
 
-    if (digits.length === 2) return build(digits[0], digits[1])
-    if (digits.length === 3) return build(digits[0], digits.slice(1, 3))
-    if (digits.length === 4) return build(digits.slice(0, 2), digits.slice(2, 4))
-    if (digits.length === 5) return build(digits[0], digits.slice(1, 3), digits.slice(3, 5))
-    if (digits.length === 6) return build(digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 6))
-    if (digits.length >= 8) return build(digits.slice(0, 2), digits.slice(2, 4), digits.slice(6, 8))
+    if (digits.length === 8) {
+        if (digits.startsWith('19') || digits.startsWith('20')) return build(digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8))
+        return build(digits.slice(4, 8), digits.slice(2, 4), digits.slice(0, 2))
+    }
+    if (digits.length === 6) return build(digits.slice(4, 6), digits.slice(2, 4), digits.slice(0, 2))
+    if (digits.length === 5) return build(digits.slice(3, 5), digits.slice(1, 3), digits[0])
+    if (digits.length === 4) return build(currentYear, digits.slice(0, 2), digits.slice(2, 4))
+    if (digits.length === 3) return build(currentYear, digits[0], digits.slice(1, 3))
+    if (digits.length === 2) return build(currentYear, digits[0], digits[1])
 
     return value
 }
@@ -167,4 +176,3 @@ export function downloadBlob(blob: Blob, filename: string): void {
 export function emptyRow<T extends object>(factory: () => T, count: number): T[] {
     return Array.from({ length: count }, () => factory())
 }
-
