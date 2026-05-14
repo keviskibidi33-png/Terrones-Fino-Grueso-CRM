@@ -177,7 +177,13 @@ export default function ModuloForm() {
         <select
             className={`${DEFAULT_SELECT_CLASS} ${alignmentClass(options.align)} ${options.className || ''}`.trim()}
             value={stringValue(path)}
-            onChange={(event) => setField(path, event.target.value === '' ? null : event.target.value)}
+            onChange={(event) => {
+                const nextValue = event.target.value === '' ? null : event.target.value
+                setField(path, nextValue)
+                if ((path === 'revisado_por' || path === 'aprobado_por') && nextValue && nextValue !== '-') {
+                    setField(path === 'revisado_por' ? 'revisado_fecha' : 'aprobado_fecha', normalizeFlexibleDate(new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Lima' })))
+                }
+            }}
             autoComplete="off"
             data-lpignore="true"
         >
